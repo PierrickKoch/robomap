@@ -1,0 +1,9 @@
+# folders
+tmp/
+build/
+js/
+# python
+*.pyc
+# other files
+*~
+pose.json

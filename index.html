@@ -1,0 +1,73 @@
+<!doctype html>
+<!-- might use cdnjs.cloudflare.com -->
+<link  href="js/leaflet.min.css" rel="stylesheet" />
+<script src="js/leaflet.js"></script>
+<script src="js/jquery.min.js"></script>
+<script src="js/proj4.js"></script>
+<style>
+    #map { height: 800px; }
+</style>
+
+<body>
+    <div id="map"/>
+    https://github.com/proj4js/proj4js - https://github.com/Leaflet/Leaflet
+</body>
+
+<script>
+
+// caylus
+// var CUSTOM_X_ORIGIN=398369.61;
+// var CUSTOM_Y_ORIGIN=4903128.01;
+
+// laas (new)
+// var CUSTOM_X_ORIGIN=377023.24;
+// var CUSTOM_Y_ORIGIN=4824377.15;
+
+// laas (origin)
+var CUSTOM_X_ORIGIN=377084.01;
+var CUSTOM_Y_ORIGIN=4824464.47;
+
+// https://wiki.laas.fr/robots/GlobalPositioningSystem/NovatelConfiguration
+var utm_zone = "+proj=utm +zone=31";
+var wgs84 = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
+
+function custom2latlong(easting, northing) {
+    var utm = [ CUSTOM_X_ORIGIN + easting  ,
+                CUSTOM_Y_ORIGIN + northing ];
+    var longlat = proj4(utm_zone, wgs84, utm);
+    return [longlat[1], longlat[0]];
+}
+
+var origin = custom2latlong(0, 0);
+
+// create a map in the "map" div, set the view to a given place and zoom
+var map = L.map('map').setView(origin, 18);
+
+// add an OpenStreetMap tile layer
+L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+// add a marker in the given location, attach some popup content to it and open the popup
+L.marker(origin).addTo(map)
+    .bindPopup('origin')
+    .openPopup();
+
+var polyline = L.polyline([], {color: 'red'}).addTo(map);
+
+// get pom pose from picoweb http://localhost:8080/pom?get=Pos
+// http://api.jquery.com/jQuery.ajax/
+function add_marker() {
+    $.ajax({
+      url: "pose.json", // ?" + Number(new Date),
+      success: function( data ) {
+        console.log(data);
+        polyline.addLatLng(custom2latlong(data.x, data.y));
+        window.setTimeout(add_marker, 500);
+      }
+    });
+}
+
+add_marker()
+
+</script>
