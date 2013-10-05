@@ -3,7 +3,6 @@
 <!-- might use cdnjs.cloudflare.com -->
 <link  href="js/leaflet.min.css" rel="stylesheet" />
 <script src="js/leaflet.js"></script>
-<script src="js/jquery.min.js"></script>
 <script src="js/proj4.js"></script>
 <style>
 body {
@@ -63,16 +62,17 @@ L.marker(origin).addTo(map)
 var polyline = L.polyline([], {color: 'red'}).addTo(map);
 
 // get pom pose from picoweb http://localhost:8080/pom?get=Pos
-// http://api.jquery.com/jQuery.ajax/
+// https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
 function add_marker() {
-    $.ajax({
-      url: "pose.json", // ?" + Number(new Date),
-      success: function( data ) {
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function() {
+        var data = JSON.parse(this.response);
         console.log(data);
         polyline.addLatLng(custom2latlong(data.x, data.y));
         window.setTimeout(add_marker, 500);
-      }
-    });
+    };
+    xhr.open("get", "pose.json", true);
+    xhr.send();
 }
 
 add_marker()
