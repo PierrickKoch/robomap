@@ -29,22 +29,24 @@ html, body, #map {
 // var CUSTOM_X_ORIGIN=377023.24;
 // var CUSTOM_Y_ORIGIN=4824377.15;
 
+// https://wiki.laas.fr/robots/GlobalPositioningSystem/NovatelConfiguration
 // laas (origin)
 var CUSTOM_X_ORIGIN=377084.01;
 var CUSTOM_Y_ORIGIN=4824464.47;
 
-// https://wiki.laas.fr/robots/GlobalPositioningSystem/NovatelConfiguration
 var utm_zone = "+proj=utm +zone=31";
 var wgs84 = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
 
-function custom2latlong(easting, northing) {
+function latlong(easting, northing) {
     var utm = [ CUSTOM_X_ORIGIN + easting  ,
                 CUSTOM_Y_ORIGIN + northing ];
+    // convert UTM to long/lat
     var longlat = proj4(utm_zone, wgs84, utm);
+    // return lat/long
     return [longlat[1], longlat[0]];
 }
 
-var origin = custom2latlong(0, 0);
+var origin = latlong(0, 0);
 
 // create a map in the "map" div, set the view to a given place and zoom
 var map = L.map('map').setView(origin, 18);
@@ -61,20 +63,29 @@ L.marker(origin).addTo(map)
 
 var polyline = L.polyline([], {color: 'red'}).addTo(map);
 
+function process(data) {
+    // might want to check if [x,y] was already the last added
+    polyline.addLatLng(latlong(data.x, data.y));
+}
+
 // get pom pose from picoweb http://localhost:8080/pom?get=Pos
-// https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
-function add_marker() {
+// https://developer.mozilla.org/en-US/docs/AJAX
+// https://developer.mozilla.org/en-US/docs/JSON
+function update() {
     var xhr = new XMLHttpRequest();
     xhr.onload = function() {
-        var data = JSON.parse(this.response);
-        console.log(data);
-        polyline.addLatLng(custom2latlong(data.x, data.y));
-        window.setTimeout(add_marker, 500);
+        try {
+            var data = JSON.parse(this.response);
+            process(data);
+        } catch (err) {
+            console.log("[error] parsing response: " + err);
+        }
+        window.setTimeout(update, 500);
     };
     xhr.open("get", "pose.json", true);
     xhr.send();
 }
 
-add_marker()
+update()
 
 </script>
