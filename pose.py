@@ -21,8 +21,9 @@ def update(picoweb = "http://localhost:8080", posejson = "pose.json"):
     for key in result.keys():
         result[key] = getf(key)
 
+    txt = dumps( result )
     with open(posejson, 'w') as f:
-        f.write( dumps( result ) )
+        f.write( txt )
 
 try:
     update()
