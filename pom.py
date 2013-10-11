@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import json
 
 with open('pom.log') as f:

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from json import dumps
 from lxml import etree
 from time import sleep
