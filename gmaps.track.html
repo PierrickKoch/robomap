@@ -1,0 +1,111 @@
+<!doctype html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDzxCNo-UEdnFUSeWXpMwA-K79RsWSxzzc&amp;sensor=false"></script>
+<script src="js/proj4.js"></script>
+<style>
+body { padding: 0; margin: 0; }
+html, body, #map { height: 100%; }
+</style>
+
+<body>
+    <div id="map"/>
+    https://github.com/proj4js/proj4js
+</body>
+
+<script>
+
+// caylus
+// var CUSTOM_X_ORIGIN=398369.61;
+// var CUSTOM_Y_ORIGIN=4903128.01;
+
+// laas (new)
+// var CUSTOM_X_ORIGIN=377023.24;
+// var CUSTOM_Y_ORIGIN=4824377.15;
+
+// https://wiki.laas.fr/robots/GlobalPositioningSystem/NovatelConfiguration
+// laas (origin)
+var CUSTOM_X_ORIGIN=377084.01;
+var CUSTOM_Y_ORIGIN=4824464.47;
+
+var utm_zone = "+proj=utm +zone=31";
+var wgs84 = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
+
+function latlong(easting, northing) {
+    var utm = [ CUSTOM_X_ORIGIN + easting  ,
+                CUSTOM_Y_ORIGIN + northing ];
+    // convert UTM to long/lat
+    var longlat = proj4(utm_zone, wgs84, utm);
+    // return lat/long
+    return [longlat[1], longlat[0]];
+}
+
+var origin = latlong(0, 0);
+
+var map = new google.maps.Map(document.getElementById("map"), {
+    center: new google.maps.LatLng(origin[0], origin[1]), zoom: 18,
+    mapTypeId: google.maps.MapTypeId.SATELLITE, tilt: 0,
+});
+
+var polyline = new google.maps.Polyline({ strokeColor: '#FF0000' });
+
+polyline.setMap(map);
+
+var path = [];
+function process(data) {
+    // might want to check if [x,y] was already the last added
+    for (i = 0; i < data.length; i++) {
+        x = data[i][0];
+        y = data[i][1];
+        ll = latlong(x, y);
+        path.push(new google.maps.LatLng(ll[0], ll[1]));
+        polyline.setPath(path);
+    }
+}
+function process_track(data) {
+    // might want to check if [x,y] was already the last added
+    for (i = 0; i < data.length; i++) {
+        x = data[i][0];
+        y = data[i][1];
+        ll = latlong(x, y);
+        var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(ll[0], ll[1]),
+            map: map,
+            title: 'track'+i
+        });
+    }
+}
+
+// get pom pose from picoweb http://localhost:8080/pom?get=Pos
+// https://developer.mozilla.org/en-US/docs/AJAX
+// https://developer.mozilla.org/en-US/docs/JSON
+function update() {
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function() {
+        try {
+            var data = JSON.parse(this.response);
+            process(data);
+        } catch (err) {
+            console.log("[error] parsing response: " + err);
+        }
+    };
+    xhr.open("get", "pom.json", true);
+    xhr.send();
+}
+function update_track() {
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function() {
+        try {
+            var data = JSON.parse(this.response);
+            process_track(data);
+        } catch (err) {
+            console.log("[error] parsing response: " + err);
+        }
+    };
+    xhr.open("get", "track.json", true);
+    xhr.send();
+}
+
+update()
+update_track()
+
+</script>
