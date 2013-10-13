@@ -30,10 +30,16 @@ def update(picoweb = "http://mana-superbase:8080", posejson = "pose.json"):
     with open(posejson, 'w') as f:
         f.write( txt )
 
+import sys
+if len(sys.argv) > 1:
+    robot = argv[1]
+else:
+    robot = "mana-superbase"
+
 try:
     while 1:
         try:
-            update()
+            update('http://%s:8080'%robot)
             print(repr(result))
         except Exception as e:
             print("[error] %s"%str(e))
