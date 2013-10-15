@@ -46,17 +46,3 @@ try:
         sleep(.1)
 except KeyboardInterrupt:
     print("[bye]")
-
-'''
-# test
-from random import random
-try:
-    while 1:
-        result['x'] += random()
-        result['y'] += random()
-        with open('pose.json', 'w') as f:
-            f.write( dumps( result ) )
-        sleep(.1)
-except KeyboardInterrupt:
-    print("[bye]")
-'''

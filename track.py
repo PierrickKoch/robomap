@@ -5,7 +5,7 @@ with open('tracking.output') as f:
     lines = f.readlines()
 
 track = []
-# date yaw pitch roll x y z
+#  x y
 for line in lines:
   pose = line.split()
   x = float(pose[0])
