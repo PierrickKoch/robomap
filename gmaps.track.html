@@ -27,14 +27,14 @@ html, body, #map { height: 100%; }
 var CUSTOM_X_ORIGIN=377084.01;
 var CUSTOM_Y_ORIGIN=4824464.47;
 
-var utm_zone = "+proj=utm +zone=31";
+var utm31 = "+proj=utm +zone=31";
 var wgs84 = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
 
 function latlong(easting, northing) {
     var utm = [ CUSTOM_X_ORIGIN + easting  ,
                 CUSTOM_Y_ORIGIN + northing ];
     // convert UTM to long/lat
-    var longlat = proj4(utm_zone, wgs84, utm);
+    var longlat = proj4(utm31, wgs84, utm);
     // return lat/long
     return [longlat[1], longlat[0]];
 }
