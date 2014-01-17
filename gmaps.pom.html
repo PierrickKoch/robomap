@@ -70,4 +70,12 @@ function update() {
 
 update()
 
+function marker(x, y) {
+    var ll = latlong(x, y);
+    return new google.maps.Marker({
+        position: new google.maps.LatLng(ll[0], ll[1]),
+        map: map,
+    });
+}
+
 </script>
