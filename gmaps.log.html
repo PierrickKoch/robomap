@@ -12,6 +12,14 @@ html, body, #map { height: 100%; }
 </body>
 
 <script>
+
+/**
+ * open this file in a browser from a runing webserver
+ * use: `python -m SimpleHTTPServer`
+ * then, in your browser, hit CTRL+SHIFT+J to open JS console,
+ * use the `plan()` and `reset()` function from this console.
+ */
+
 // laas (origin)
 var CUSTOM_X_ORIGIN=377084.01;
 var CUSTOM_Y_ORIGIN=4824464.47;
@@ -27,17 +35,50 @@ function latlong(easting, northing) {
     // return lat/long
     return [longlat[1], longlat[0]];
 }
-
+function custom(utm) {
+    return "goto " +
+        (utm[0] - CUSTOM_X_ORIGIN).toFixed(3) + " " +
+        (utm[1] - CUSTOM_Y_ORIGIN).toFixed(3) ;
+}
 var origin = latlong(0, 0);
 
 var map = new google.maps.Map(document.getElementById("map"), {
-    center: new google.maps.LatLng(origin[0], origin[1]), zoom: 18,
+    center: new google.maps.LatLng(origin[0], origin[1]), zoom: 20,
     mapTypeId: google.maps.MapTypeId.SATELLITE, tilt: 0,
 });
 
+var polyline = new google.maps.Polyline({ strokeColor: '#FF0000', editable: true });
+polyline.setMap(map);
+var path = [];
+
 google.maps.event.addListener(map, 'click', function(event) {
-    utm = proj4(wgs84, utm31, [event.latLng.mb, event.latLng.lb]);
-    console.log(utm);
+    path.push(event.latLng);
+    update();
 });
+
+function update() {
+    polyline.setPath(path);
+}
+
+function reset() {
+    path = [];
+    update();
+}
+
+function plan() {
+    var txt = "";
+    for (index in path) {
+        var ll  = path[index];
+        var utm = proj4(wgs84, utm31, [ll.lng(), ll.lat()]);
+        txt += custom(utm) + "\n";
+    }
+    console.log(txt);
+}
+
+document.addEventListener('keydown', function (event) {
+    if (event.keyCode == 32) { /* spacebar */
+        reset();
+    }
+}, true);
 
 </script>
